@@ -1,3 +1,5 @@
+
+
 import React, {useContext, useReducer, useEffect, useRef, useState, createContext} from "react";
 
 const HOST_API = "http://localhost:8080/api"
@@ -5,6 +7,7 @@ const initialState = {
   list: []
 }
 const Store = createContext(initialState)
+
 
 const Form = () => {
   const formRef = useRef(null);
@@ -99,3 +102,14 @@ const StoreProvider = ({children}) => {
     {children}
   </Store.Provider>
 }
+
+function App() {
+  return (
+    <StoreProvider>
+      <Form />
+      <List />
+    </StoreProvider>
+  );
+  
+}
+export default App;
