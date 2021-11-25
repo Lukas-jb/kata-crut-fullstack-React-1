@@ -1,21 +1,21 @@
-
-
 import React, {useContext, useReducer, useEffect, useRef, useState, createContext} from "react";
 
-const HOST_API = "http://localhost:8080/api"
+
+const HOST_API = "http://localhost:8080/api"                //coneccion al appi splig boot
 const initialState = {
-  list: []
+  list: [],
+  item:{}                                                   //--
 }
-const Store = createContext(initialState)
 
+const Store = createContext(initialState)                   //variable para crear el contexto
 
-const Form = () => {
+const Form = () => {                                        //funcion para crear el formulario
   const formRef = useRef(null);
-  const{dispatch} = useContext(Store);
-  const [state, setState] = useState({});
+  const{dispatch,state:{item}} = useContext(Store);
+  const [state, setState] = useState({});                   //--
 
 
-  const onAdd = (event) => {
+  const onAdd = (event) => {                                // agrega un nuevo item a la lista al hacer click
     event.preventDefault();
 
     const request = {
@@ -37,10 +37,33 @@ const Form = () => {
         setState({ name: "" });
         formRef.current.reset();
       });
-  }
+  }                                                         //--
 
+  const onEdit = (event) => {                               //Ejecuta al hacer click en boton editar
+    event.preventDefault();
 
-  return <form ref= {formRef}>
+    const request = {
+      name: state.name,
+      id: item.id,
+      isCompleted: item.isComplete
+    };
+
+    fetch(HOST_API + "/todo", {
+      method: "PUT",
+      body: JSON.stringify(request),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then((todo) => {
+        dispatch({ type: "update-item", item: todo });
+        setState({ name: "" });
+        formRef.current.reset();
+      });
+  }                                                         //--
+
+  return <form ref= {formRef}>            
     <input type= "text" name = "name" onChange={(event)=> {
       setState({...state, name: event.target.value})
     }}></input>
@@ -59,6 +82,20 @@ const List = () =>{
     })
   }, [state.list.length, dispatch]);
 
+
+  const onDelete = (id) => {                                 //Funcion permite eliminar al darclic en el boton eliminar
+    fetch(HOST_API + "/" + id + "/todo", {
+      method: "DELETE"
+    })
+    .then((List) => {
+      dispatch({ type: "delete-item", id})
+    })
+  };                                                         //--
+
+  const onEdit = (todo) => {                                //Fincion para editar al dar clic en editar
+    dispatch({ type: "edit-item", item: todo })
+  };
+
   return <div>
   <table >
     <thead>
@@ -74,6 +111,8 @@ const List = () =>{
           <td>{todo.id}</td>
           <td>{todo.name}</td>
           <td>{todo.isComplete}</td>
+          <td><button onClick={() => onDelete(todo.id)}>Eliminar</button></td>
+          <td><button onClick={() => onEdit(todo)}>Editar</button></td>
         </tr>
       })}
     </tbody>
@@ -81,11 +120,18 @@ const List = () =>{
 </div>
 }
 
-function reducer(state, action) {
+function reducer(state, action) {                           //Funcion que actualiza el estado, tomando (estado actual estado nuevo)
   switch (action.type) {
+    case 'delete-item':
+      const listUpdate = state.filter((item) => {
+        return item.id !== action.id;
+      });
+      return { ...state, list: listUpdate }
     case 'update-list':
-      return {...state, list: action.list}
-      case 'add-item':
+      return { ...state, list: action.list }
+    case 'edit-list':
+      return { ...state, item: action.edit }
+    case 'add-item':
         const newList = state.list;
         newList.push(action.item);
         return {...state, list: newList}
@@ -94,7 +140,7 @@ function reducer(state, action) {
   }
 }
 
-const StoreProvider = ({children}) => {
+const StoreProvider = ({children}) => {                     //Funcion para crear contexto chilfren
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -102,6 +148,7 @@ const StoreProvider = ({children}) => {
     {children}
   </Store.Provider>
 }
+
 
 function App() {
   return (
