@@ -8,7 +8,6 @@ public class Todo {
 
     @Id
     @GeneratedValue
-
     private Long id;
     private String name;
     private boolean isCompleted;
