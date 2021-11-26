@@ -4,13 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000/")
 public class TodoController {
 
 
     @Autowired
     private TodoService service;
 
-    @GetMapping(value = "api/todos ")
+    @GetMapping(value = "api/todos")
     public Iterable<Todo> list() {
         return service.list();
     }
@@ -29,7 +30,7 @@ public class TodoController {
     }
 
     @DeleteMapping(value = "api/{id}/todo")
-    public void delete(@PathVariable Long id) {
+    public void delete(@PathVariable ("id")Long id) {
         service.delete(id);
     }
 
@@ -37,6 +38,4 @@ public class TodoController {
     public Todo get(@PathVariable Long id) {
         return service.get(id);
     }
-
-
 }
